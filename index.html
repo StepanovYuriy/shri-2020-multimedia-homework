@@ -5,43 +5,122 @@
     <title>Test streams</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="initVideo.js"></script>
-    <style>
-        .video {
-            width: 300px;
-            height: 200px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<video id="video-1" class="video" controls muted autoplay></video>
-<video id="video-2" class="video" controls muted autoplay></video>
+<div class="grid" id="grid">
+    <div class="grid__item">
+        <video id="video-1" class="grid__video" muted></video>
+    </div>
+    <div class="grid__item">
+        <video id="video-2" class="grid__video" muted></video>
+    </div>
+    <div class="grid__item">
+        <video id="video-3" class="grid__video" muted></video>
+    </div>
+    <div class="grid__item">
+        <video id="video-4" class="grid__video" muted></video>
+    </div>
+</div>
+
 <br>
-<video id="video-3" class="video" controls muted autoplay></video>
-<video id="video-4" class="video" controls muted autoplay></video>
+<label for="brightness-input">Яркость</label>
+<input type="range" id="brightness-input" min="0" max="2" step="0.01">
+<label for="brightness-input" id="brightness-input-value">1</label>
+<br>
+<label for="contrast-input">Контраст</label>
+<input type="range" id="contrast-input" min="0" max="2" step="0.01">
+<label for="contrast-input" id="contrast-input-value">1</label>
+
 <script>
     initVideo(
         document.getElementById('video-1'),
-        'http://localhost:9191/master?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fsosed%2Fmaster.m3u8'
+        'http://localhost:9191/master?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fsosed%2Fmaster.m3u8',
     );
 
     initVideo(
         document.getElementById('video-2'),
-        'http://localhost:9191/live?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fstairs%2Fmaster.m3u8'
+        'http://localhost:9191/live?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fstairs%2Fmaster.m3u8',
     );
 
     initVideo(
         document.getElementById('video-3'),
-        'http://localhost:9191/master?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fdog%2Fmaster.m3u8'
+        'http://localhost:9191/master?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fdog%2Fmaster.m3u8',
     );
 
     initVideo(
         document.getElementById('video-4'),
-        'http://localhost:9191/live?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fstreet%2Fmaster.m3u8'
+        'http://localhost:9191/live?url=http%3A%2F%2Flocalhost%3A3102%2Fstreams%2Fstreet%2Fmaster.m3u8',
     );
 
 </script>
 
+<script>
+    const grid = document.getElementById('grid');
+
+    const videos = [...document.querySelectorAll('.grid__video')];
+    videos.forEach((video) => {
+        video.addEventListener('click', () => {
+            video.classList.toggle('video_fullscreen');
+
+            const shouldGoFS = video.classList.contains('video_fullscreen');
+
+            if (shouldGoFS) {
+                const rect = video.getBoundingClientRect();
+                video.style.position = 'fixed';
+                video.style.left = rect.x + 'px';
+                video.style.top = rect.y + 'px';
+                video.style.width = rect.width + 'px';
+                video.style.height = rect.height + 'px';
+
+                video.getBoundingClientRect();
+
+                video.classList.add('video_expanded');
+                video.style.left = '0px';
+                video.style.top = '0px';
+                video.style.width = '100%';
+                video.style.height = '100%';
+            } else {
+                const gridItem = video.parentNode;
+                const rect = gridItem.getBoundingClientRect();
+
+                setTimeout(() => {
+                    video.style.position = 'static';
+                    video.classList.remove('video_expanded');
+                }, 1000);
+
+                video.style.left = rect.x + 'px';
+                video.style.top = rect.y + 'px';
+                video.style.width = rect.width + 'px';
+                video.style.height = rect.height + 'px';
+            }
+        });
+    });
+</script>
+
+<script>
+    const brightnessInput = document.getElementById('brightness-input');
+    const contrastInput = document.getElementById('contrast-input');
+    const contrastLabel = document.getElementById('contrast-input-value');
+    const brightnessLabel = document.getElementById('brightness-input-value');
+
+    function update() {
+        const videos = [...document.querySelectorAll('.grid__video')];
+        const brightness = brightnessInput.value;
+        const contrast = contrastInput.value;
+        videos.forEach((video) => {
+            video.style.filter = `brightness(${brightness}) contrast(${contrast})`;
+        });
+        brightnessLabel.innerText = brightness;
+        contrastLabel.innerText = contrast;
+    }
+
+    [brightnessInput, contrastInput].forEach((input) => {
+        input.addEventListener('input', update);
+    });
+
+</script>
 
 </body>
 </html>
